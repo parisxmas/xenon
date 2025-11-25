@@ -5,6 +5,7 @@ import { BulletManager } from './BulletManager.js';
 import { PowerUpManager } from './PowerUpManager.js';
 import { Background } from './Background.js';
 import { ParticleSystem } from './ParticleSystem.js';
+import { audioManager } from './AudioManager.js';
 
 export class Game {
   constructor() {
@@ -126,12 +127,21 @@ export class Game {
   }
   
   start() {
+    // Initialize audio on user interaction
+    audioManager.init();
+    audioManager.resume();
+    audioManager.playStart();
+    
     this.isRunning = true;
     this.clock.start();
     this.animate();
   }
   
   restart() {
+    // Resume audio
+    audioManager.resume();
+    audioManager.playStart();
+    
     // Reset game state
     this.score = 0;
     this.lives = 3;
@@ -218,6 +228,10 @@ export class Game {
           this.bulletManager.removePlayerBullet(i);
           
           if (destroyed) {
+            // Play explosion sound based on enemy type
+            const explosionSize = enemy.type === 'tank' ? 'large' : enemy.type === 'bomber' ? 'large' : 'medium';
+            audioManager.playExplosion(explosionSize);
+            
             // Add score
             this.addScore(enemy.points);
             
@@ -309,6 +323,9 @@ export class Game {
     this.lives--;
     this.updateLivesUI();
     
+    // Play hit sound
+    audioManager.playPlayerHit();
+    
     // Create explosion at player
     this.particleSystem.createExplosion(
       this.player.mesh.position.x,
@@ -329,6 +346,9 @@ export class Game {
   }
   
   collectPowerUp(powerUp) {
+    // Play power-up sound
+    audioManager.playPowerUp();
+    
     switch (powerUp.type) {
       case 'power':
         this.powerLevel = Math.min(5, this.powerLevel + 1);
@@ -364,6 +384,7 @@ export class Game {
     if (newWave > this.wave) {
       this.wave = newWave;
       this.updateWaveUI();
+      audioManager.playWaveStart();
     }
   }
   
@@ -392,6 +413,7 @@ export class Game {
   
   gameOver() {
     this.isRunning = false;
+    audioManager.playGameOver();
     document.getElementById('final-score').textContent = this.score.toLocaleString();
     document.getElementById('game-over-screen').style.display = 'flex';
   }

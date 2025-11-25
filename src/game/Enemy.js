@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { audioManager } from './AudioManager.js';
 
 export class Enemy {
   constructor(scene, x, y, config) {
@@ -280,6 +281,9 @@ export class Enemy {
   shoot(bulletManager) {
     const x = this.mesh.position.x;
     const y = this.mesh.position.y - 1.5;
+    
+    // Play enemy shoot sound
+    audioManager.playEnemyShoot();
     
     switch (this.type) {
       case 'basic':
