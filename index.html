@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XENON - Space Shooter</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      overflow: hidden;
+      background: #000;
+      font-family: 'Rajdhani', sans-serif;
+    }
+    
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    canvas {
+      display: block;
+    }
+    
+    #ui-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+    
+    #score-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #00ffcc;
+      font-family: 'Orbitron', monospace;
+      text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
+    }
+    
+    #score-label {
+      font-size: 14px;
+      letter-spacing: 3px;
+      opacity: 0.8;
+    }
+    
+    #score-value {
+      font-size: 36px;
+      font-weight: 900;
+    }
+    
+    #lives-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .life-icon {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #ff3366, #ff6699);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      box-shadow: 0 0 10px #ff3366;
+    }
+    
+    #power-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 200px;
+    }
+    
+    #power-label {
+      font-size: 12px;
+      color: #ffcc00;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+      font-family: 'Orbitron', monospace;
+    }
+    
+    #power-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 204, 0, 0.2);
+      border: 1px solid #ffcc00;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    #power-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ffcc00, #ff9900);
+      box-shadow: 0 0 10px #ffcc00;
+      transition: width 0.3s ease;
+    }
+    
+    #wave-indicator {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      color: #9966ff;
+      font-family: 'Orbitron', monospace;
+      text-align: right;
+      text-shadow: 0 0 10px #9966ff;
+    }
+    
+    #wave-label {
+      font-size: 12px;
+      letter-spacing: 2px;
+      opacity: 0.8;
+    }
+    
+    #wave-value {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    #start-screen, #game-over-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(ellipse at center, rgba(0,20,40,0.9) 0%, rgba(0,0,0,0.95) 100%);
+      pointer-events: all;
+      z-index: 100;
+    }
+    
+    #game-over-screen {
+      display: none;
+    }
+    
+    .game-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 120px;
+      font-weight: 900;
+      background: linear-gradient(180deg, #00ffcc 0%, #0099ff 50%, #9966ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 30px rgba(0,255,204,0.5));
+      letter-spacing: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .subtitle {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 24px;
+      color: #666;
+      letter-spacing: 10px;
+      margin-bottom: 60px;
+    }
+    
+    .start-btn {
+      font-family: 'Orbitron', monospace;
+      font-size: 20px;
+      padding: 20px 60px;
+      background: transparent;
+      border: 2px solid #00ffcc;
+      color: #00ffcc;
+      cursor: pointer;
+      letter-spacing: 5px;
+      transition: all 0.3s ease;
+      pointer-events: all;
+    }
+    
+    .start-btn:hover {
+      background: #00ffcc;
+      color: #000;
+      box-shadow: 0 0 30px #00ffcc;
+    }
+    
+    .controls-info {
+      margin-top: 60px;
+      color: #444;
+      font-size: 14px;
+      text-align: center;
+      line-height: 2;
+    }
+    
+    .controls-info span {
+      color: #00ffcc;
+      font-family: 'Orbitron', monospace;
+    }
+    
+    #final-score {
+      font-family: 'Orbitron', monospace;
+      font-size: 48px;
+      color: #00ffcc;
+      margin: 20px 0 40px;
+    }
+    
+    .game-over-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 72px;
+      font-weight: 900;
+      color: #ff3366;
+      text-shadow: 0 0 30px #ff3366;
+      letter-spacing: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="ui-overlay">
+      <div id="score-panel">
+        <div id="score-label">SCORE</div>
+        <div id="score-value">0</div>
+      </div>
+      
+      <div id="lives-panel">
+        <div class="life-icon"></div>
+        <div class="life-icon"></div>
+        <div class="life-icon"></div>
+      </div>
+      
+      <div id="power-bar">
+        <div id="power-label">POWER</div>
+        <div id="power-track">
+          <div id="power-fill"></div>
+        </div>
+      </div>
+      
+      <div id="wave-indicator">
+        <div id="wave-label">WAVE</div>
+        <div id="wave-value">1</div>
+      </div>
+    </div>
+    
+    <div id="start-screen">
+      <h1 class="game-title">XENON</h1>
+      <p class="subtitle">MEGABLAST</p>
+      <button class="start-btn" id="start-btn">BAŞLAT</button>
+      <div class="controls-info">
+        <span>← →</span> veya <span>A D</span> Hareket<br>
+        <span>SPACE</span> Ateş
+      </div>
+    </div>
+    
+    <div id="game-over-screen">
+      <h1 class="game-over-title">OYUN BİTTİ</h1>
+      <div id="final-score">0</div>
+      <button class="start-btn" id="restart-btn">TEKRAR OYNA</button>
+    </div>
+  </div>
+  
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+
